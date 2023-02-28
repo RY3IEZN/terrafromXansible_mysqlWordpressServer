@@ -95,6 +95,20 @@ resource "azurerm_network_security_rule" "poc_nsg_rule1" {
   resource_group_name         = azurerm_resource_group.poc_server_rg.name
   network_security_group_name = azurerm_network_security_group.poc_nsg.name
 }
+# create the rules for the nsg
+resource "azurerm_network_security_rule" "poc_nsg_rule2" {
+  name                        = "poc_nsg_rule2"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.poc_server_rg.name
+  network_security_group_name = azurerm_network_security_group.poc_nsg.name
+}
 
 # create a public IP for the vm
 resource "azurerm_public_ip" "poc-server-ip1" {
@@ -162,15 +176,15 @@ resource "azurerm_linux_virtual_machine" "poc_fe_vm" {
   resource_group_name = azurerm_resource_group.poc_server_rg.name
   location            = azurerm_resource_group.poc_server_rg.location
   size                = "Standard_B1s"
-  admin_username      = "dev1"
+  admin_username      = "adminuser"
 
   network_interface_ids = [
     azurerm_network_interface.poc-nic1.id,
   ]
 
   admin_ssh_key {
-    username   = "dev1"
-    public_key = file("~/.ssh/azurevmkey.pub")
+    username   = "adminuser"
+    public_key = file("~/.ssh/id_rsa.pub")
   }
 
   os_disk {
@@ -184,6 +198,12 @@ resource "azurerm_linux_virtual_machine" "poc_fe_vm" {
     sku       = "16.04-LTS"
     version   = "latest"
   }
+
+  provisioner "local-exec" {
+    working_dir = "/home/ubuntu/teraaformxansible/terrafromXansible_mysqlWordpressServer"
+    command     = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook deploy_mysql.yaml -i ${self.public_ip_address}, --private-key ${var.ssh_key} --user adminuser"
+  }
+
 
   tags = {
     enviroment : "dev"

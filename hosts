@@ -1,0 +1,1 @@
+52.56.77.127 ansible_private_key_file=~/.ssh/helloworld.pem ansible_user=ubuntu
