@@ -6,3 +6,38 @@
   tasks:
     - name: update app repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+    - name: install mysql
+      apt:
+        name: mysql-server
+        state: present
+    
+    - name: Install Python3
+      apt:
+         name: python3
+         state: present    
+    
+    - name: Install mysql-client
+      apt:
+         name: mysql-client
+         state: present    
+    
+    - name: start and enable mysql service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: change the binding ports
+      lineinfile:
+         path: /etc/mysql/mysql.conf.d/mysqld.cnf
+         regexp: '^bind-address'
+         line: 'bind-address = 0.0.0.0'
+
+    - name: Create admin user
+      mysql_user:
+        name: ghost
+        password: xxxtentationxxx
+        priv: "*.*:ALL,GRANT"
+        append_privs: yes
+        state: present
