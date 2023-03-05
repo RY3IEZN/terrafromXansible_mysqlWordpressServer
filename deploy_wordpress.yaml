@@ -1,0 +1,72 @@
+---
+# install mysql
+- name: install mysql
+  hosts: all
+  become: yes
+  tasks:
+    - name: update app repo and cache
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+    - name: install apache
+      apt:
+        name: apache2
+        state: present
+
+    - name: install php
+      apt:
+        name: php
+        state: present
+
+    - name : install php-mysqli
+      apt:
+        name: php-mysqli
+        state: present
+
+    - name : install php-xml
+      apt:
+        name: php-xml
+        state: present
+
+
+# clear up php home page
+- name: clean up apache
+  hosts : all
+  become: yes
+  tasks:
+    - name: clear apache landing page
+      command: 
+        cmd: rm /var/www/html/index.html
+      async: 1000
+      poll: 0
+
+# extract and install wordpress
+- name: install wordpress
+  hosts: all
+  become: yes
+  tasks:
+    - name: download wordpress tar file
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /home/
+      register: download_result
+    - debug: msg={{download_result}}
+
+    - name: extract wordpress
+      unarchive:
+        src: /home/wordpress-6.1.1.tar.gz
+        dest: /home/
+        remote_src: yes
+
+    - name: copy content to apache html
+      command: cp -r /home/wordpress/. /var/www/html/
+    
+    - name: set permissions
+      command: chown -R www-data:www-data /var/www/html/
+
+    # for php8 and above
+    - name: additional fix for missing mysql
+      command: sudo apt install php libapache2-mod-php php-mysql -y
+
+    - name: restart apahce
+      command: sudo systemctl restart apache2
+      

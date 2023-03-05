@@ -81,20 +81,20 @@ resource "azurerm_subnet_network_security_group_association" "poc_nsg_asoc2" {
   network_security_group_id = azurerm_network_security_group.poc_nsg.id
 }
 
-# create the rules for the nsg
-resource "azurerm_network_security_rule" "poc_nsg_rule1" {
-  name                        = "poc_nsg_rule1"
-  priority                    = 201
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "*"
-  source_port_range           = "*"
-  destination_port_range      = "22"
-  source_address_prefix       = "*"
-  destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.poc_server_rg.name
-  network_security_group_name = azurerm_network_security_group.poc_nsg.name
-}
+# # create the rules for the nsg
+# resource "azurerm_network_security_rule" "poc_nsg_rule1" {
+#   name                        = "poc_nsg_rule1"
+#   priority                    = 201
+#   direction                   = "Inbound"
+#   access                      = "Allow"
+#   protocol                    = "*"
+#   source_port_range           = "*"
+#   destination_port_range      = "22"
+#   source_address_prefix       = "*"
+#   destination_address_prefix  = "*"
+#   resource_group_name         = azurerm_resource_group.poc_server_rg.name
+#   network_security_group_name = azurerm_network_security_group.poc_nsg.name
+# }
 # create the rules for the nsg
 resource "azurerm_network_security_rule" "poc_nsg_rule2" {
   name                        = "poc_nsg_rule2"
@@ -168,46 +168,5 @@ resource "azurerm_network_interface" "poc-nic2" {
   tags = {
     enviroment : "stage0"
   }
-}
-
-# create the VM
-resource "azurerm_linux_virtual_machine" "poc_fe_vm" {
-  name                = "pocFeVm"
-  resource_group_name = azurerm_resource_group.poc_server_rg.name
-  location            = azurerm_resource_group.poc_server_rg.location
-  size                = "Standard_B1s"
-  admin_username      = "adminuser"
-
-  network_interface_ids = [
-    azurerm_network_interface.poc-nic1.id,
-  ]
-
-  admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
-    version   = "latest"
-  }
-
-  provisioner "local-exec" {
-    working_dir = "/home/ubuntu/teraaformxansible/terrafromXansible_mysqlWordpressServer"
-    command     = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook deploy_mysql.yaml -i ${self.public_ip_address}, --private-key ${var.ssh_key} --user adminuser"
-  }
-
-
-  tags = {
-    enviroment : "dev"
-  }
-
 }
 
