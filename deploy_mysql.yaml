@@ -17,6 +17,12 @@
          name: python3
          state: present    
     
+    - name: "Install ansible python3 mysql dependency"
+      apt:
+        name: python3-mysqldb
+        state: latest
+
+    
     - name: Install mysql-client
       apt:
          name: mysql-client
@@ -40,4 +46,9 @@
         password: xxxtentationxxx
         priv: "*.*:ALL,GRANT"
         append_privs: yes
+        state: present
+    
+    - name: Create a new database with name 'bobdata'
+      mysql_db:
+        name: wordpressdbs
         state: present
