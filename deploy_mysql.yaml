@@ -1,7 +1,7 @@
 ---
 # install mysql
 - name: install mysql
-  hosts: 13.41.230.59
+  hosts: all
   become: yes
   tasks:
     - name: update app repo and cache
